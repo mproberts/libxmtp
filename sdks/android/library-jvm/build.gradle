@@ -1,0 +1,111 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm'
+    id 'java-library'
+    id 'maven-publish'
+    id 'signing'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+    withSourcesJar()
+    withJavadocJar()
+}
+
+// Match the repo's Java-17 convention without triggering toolchain auto-provisioning.
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+}
+
+sourceSets {
+    main {
+        // Generated uniffi Kotlin bindings (xmtpv3.kt) from the Nix host build.
+        // Produced by `./dev/jvm-bindings` into .build/jvm-bindings/java.
+        java.srcDirs += ["${rootProject.projectDir}/.build/jvm-bindings/java"]
+    }
+    test {
+        // Host native lib as a JNA classpath resource for RUNNING the JVM tests:
+        // resources/<os-arch>/libuniffi_xmtpv3.{dylib,so}. Kept out of `main` so the
+        // published jar (and the Android app consuming this module) don't carry the
+        // ~40MB desktop dylib. Publishing the native lib for standalone desktop-JVM
+        // consumers is a follow-up (a separate multi-slice native artifact assembled
+        // from `nix build .#jvm-libs`).
+        resources.srcDirs += ["${rootProject.projectDir}/.build/jvm-bindings/resources"]
+    }
+}
+
+dependencies {
+    // Plain desktop JNA jar (NOT the @aar Android variant): bundles libjnidispatch
+    // for darwin-*/linux-* and resolves native libs from the classpath.
+    implementation 'net.java.dev.jna:jna:5.17.0'
+    // Required by the uniffi-generated async bindings.
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0'
+
+    // Re-exported so the Android :library and downstream consumers see the proto types.
+    api 'org.xmtp:proto-kotlin:3.88.0'
+    api 'com.google.protobuf:protobuf-kotlin-lite:3.22.3'
+    // JVM Tink (NOT tink-android): only Hkdf + javax.crypto AES-GCM are used.
+    implementation 'com.google.crypto.tink:tink:1.13.0'
+    implementation 'org.web3j:crypto:4.9.4'
+
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.0'
+    testImplementation 'app.cash.turbine:turbine:1.1.0'
+    testImplementation 'org.web3j:core:4.9.4'
+    testImplementation 'org.web3j:contracts:4.9.4'
+}
+
+test {
+    useJUnit()
+    testLogging {
+        events "passed", "skipped", "failed"
+        showStandardStreams = true
+    }
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                groupId = "org.xmtp"
+                artifactId = "xmtp-jvm"
+                version = rootProject.version
+
+                from components.java
+
+                pom {
+                    name = "XMTP JVM"
+                    description = "Pure-Kotlin/JVM engine for the XMTP Android SDK (libxmtp bindings)"
+                    url = "https://github.com/xmtp/xmtp-android"
+
+                    licenses {
+                        license {
+                            name = "MIT License"
+                            url = "https://github.com/xmtp/xmtp-android/blob/main/LICENSE"
+                        }
+                    }
+                    developers {
+                        developer {
+                            id = "xmtp"
+                            name = "xmtp"
+                            email = "naomi@xmtp.com"
+                        }
+                    }
+                    scm {
+                        connection = "https://github.com/xmtp/xmtp-android.git"
+                        developerConnection = "https://github.com/xmtp/xmtp-android.git"
+                        url = "https://github.com/xmtp/xmtp-android/tree/main"
+                    }
+                }
+            }
+        }
+    }
+    signing {
+        def signingKey = System.getenv("SIGN_KEY")
+        def signingPassword = System.getenv("SIGN_PASSWORD")
+        useInMemoryPgpKeys(signingKey, signingPassword)
+        sign publishing.publications.release
+    }
+}

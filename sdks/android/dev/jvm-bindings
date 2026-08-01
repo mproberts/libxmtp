@@ -1,0 +1,17 @@
+#!/bin/bash
+# Build host-platform (desktop JVM) libxmtp bindings via Nix:
+#   - libuniffi_xmtpv3.{dylib,so} for the host, laid out as a JNA classpath resource
+#   - the generated uniffi Kotlin file xmtpv3.kt
+# Output is symlinked to sdks/android/.build/jvm-bindings, consumed by :library-jvm.
+source "$(dirname "$0")/.setup"
+
+# Host-only slice is enough for dev + CI (JVM tests always run on the host).
+# A multi-platform "jvm-libs" fat slice is assembled separately for publishing.
+PACKAGE="jvm-libs-fast"
+echo "Building host JVM bindings (host target only)..."
+
+nix build "${ROOT}#${PACKAGE}" --out-link "${SDK_ROOT}/.build/jvm-bindings"
+
+echo "Host JVM bindings built successfully:"
+echo "  Kotlin:    ${SDK_ROOT}/.build/jvm-bindings/java/uniffi/xmtpv3/xmtpv3.kt"
+echo "  Native:    ${SDK_ROOT}/.build/jvm-bindings/resources/<os-arch>/libuniffi_xmtpv3.*"

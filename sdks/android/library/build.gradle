@@ -50,10 +50,10 @@ android {
         checkTestSources = false
         ignoreTestSources = true
     }
-    // Include generated bindings from Nix build
+    // Native .so for the APK. The generated uniffi Kotlin (xmtpv3.kt) now compiles
+    // in :library-jvm; only the Android jniLibs are consumed here.
     sourceSets {
         main {
-            java.srcDirs += ["${rootProject.projectDir}/.build/bindings/java"]
             jniLibs.srcDirs += ["${rootProject.projectDir}/.build/bindings/jniLibs"]
         }
     }
@@ -83,12 +83,18 @@ protobuf {
 }
 
 dependencies {
+    // The pure-JVM engine (JvmClient + conversations + codecs + FFI bindings).
+    // Exclude the engine's desktop JNA jar; Android uses the @aar variant below.
+    api(project(':library-jvm')) {
+        exclude group: 'net.java.dev.jna'
+    }
     implementation 'com.google.crypto.tink:tink-android:1.8.0'
     implementation 'io.grpc:grpc-kotlin-stub:1.4.1'
     implementation 'io.grpc:grpc-okhttp:1.62.2'
     implementation 'io.grpc:grpc-protobuf-lite:1.62.2'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0'
     implementation 'androidx.lifecycle:lifecycle-process:2.7.0'
+    implementation 'androidx.startup:startup-runtime:1.1.1'
     implementation 'org.web3j:crypto:4.9.4'
     implementation "net.java.dev.jna:jna:5.17.0@aar"
     api 'com.google.protobuf:protobuf-kotlin-lite:3.22.3'

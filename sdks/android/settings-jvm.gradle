@@ -1,3 +1,6 @@
+// Isolated settings for building/testing the pure-JVM :library-jvm module without
+// configuring the Android modules (which need the Android SDK).
+// Usage: ./gradlew -c settings-jvm.gradle :library-jvm:test
 pluginManagement {
     repositories {
         gradlePluginPortal()
@@ -14,6 +17,4 @@ dependencyResolutionManagement {
     }
 }
 rootProject.name = "xmtp-android"
-include ':example'
-include ':library'
 include ':library-jvm'

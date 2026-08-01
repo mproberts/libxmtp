@@ -21,6 +21,14 @@ test:
 test-integration: build
   run-test-emulator && ./gradlew -p . connectedCheck --continue
 
+# Run pure-JVM tests (host libxmtp via JNA; needs `just backend up`, no emulator)
+test-jvm:
+  ./dev/jvm-bindings && ./gradlew -p . library-jvm:test
+
 # Build native bindings
 build:
   ./dev/bindings
+
+# Build host-platform (desktop JVM) native bindings
+build-jvm:
+  ./dev/jvm-bindings

@@ -11,25 +11,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
-import uniffi.xmtpv3.FfiCatchUpSummary
 import uniffi.xmtpv3.resumeStreams
 import uniffi.xmtpv3.suspendStreams
-
-/**
- * Counts of what a [Client.catchUpToLive] run brought into the local store, plus
- * whether it reached the live edge.
- */
-data class CatchUpSummary(
-    val messages: Long,
-    val conversations: Long,
-    val completed: Boolean,
-) {
-    internal constructor(ffi: FfiCatchUpSummary) : this(
-        messages = ffi.messages.toLong(),
-        conversations = ffi.conversations.toLong(),
-        completed = ffi.completed,
-    )
-}
 
 /**
  * Keeps the process-shared streaming wire in step with app foreground/background.
@@ -64,7 +47,7 @@ data class CatchUpSummary(
  * the seed runs a few async hops after registration; a stream opened inside that
  * cold-start window can still be born live — see [enableIfNeeded].)
  */
-internal object StreamLifecycleManager {
+internal object StreamLifecycleManager : StreamLifecycleController {
     private val lock = Any()
     private var registered = false
 
@@ -79,7 +62,7 @@ internal object StreamLifecycleManager {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-    fun enableIfNeeded() {
+    override fun enableIfNeeded() {
         synchronized(lock) {
             if (registered) return
             registered = true
