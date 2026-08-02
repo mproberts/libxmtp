@@ -155,6 +155,4 @@ class Fixtures(
         runBlocking { JvmClient.create(account = eriAccount, options = clientOptions) }
 }
 
-fun fixtures(
-    api: ApiOptions = localApi(),
-): Fixtures = Fixtures(api)
+fun fixtures(api: ApiOptions = localApi()): Fixtures = Fixtures(api)

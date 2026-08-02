@@ -13,15 +13,35 @@ import java.util.logging.Logger
  * landing in logcat exactly as before.
  */
 interface XmtpLogger {
-    fun v(tag: String, message: String, throwable: Throwable? = null)
+    fun v(
+        tag: String,
+        message: String,
+        throwable: Throwable? = null,
+    )
 
-    fun d(tag: String, message: String, throwable: Throwable? = null)
+    fun d(
+        tag: String,
+        message: String,
+        throwable: Throwable? = null,
+    )
 
-    fun i(tag: String, message: String, throwable: Throwable? = null)
+    fun i(
+        tag: String,
+        message: String,
+        throwable: Throwable? = null,
+    )
 
-    fun w(tag: String, message: String, throwable: Throwable? = null)
+    fun w(
+        tag: String,
+        message: String,
+        throwable: Throwable? = null,
+    )
 
-    fun e(tag: String, message: String, throwable: Throwable? = null)
+    fun e(
+        tag: String,
+        message: String,
+        throwable: Throwable? = null,
+    )
 }
 
 /**
@@ -29,20 +49,45 @@ interface XmtpLogger {
  * platform installs its own [XmtpLogger] on [XmtpLog].
  */
 object JavaUtilXmtpLogger : XmtpLogger {
-    private fun log(level: Level, tag: String, message: String, throwable: Throwable?) {
+    private fun log(
+        level: Level,
+        tag: String,
+        message: String,
+        throwable: Throwable?,
+    ) {
         val logger = Logger.getLogger("org.xmtp.$tag")
         if (throwable != null) logger.log(level, message, throwable) else logger.log(level, message)
     }
 
-    override fun v(tag: String, message: String, throwable: Throwable?) = log(Level.FINER, tag, message, throwable)
+    override fun v(
+        tag: String,
+        message: String,
+        throwable: Throwable?,
+    ) = log(Level.FINER, tag, message, throwable)
 
-    override fun d(tag: String, message: String, throwable: Throwable?) = log(Level.FINE, tag, message, throwable)
+    override fun d(
+        tag: String,
+        message: String,
+        throwable: Throwable?,
+    ) = log(Level.FINE, tag, message, throwable)
 
-    override fun i(tag: String, message: String, throwable: Throwable?) = log(Level.INFO, tag, message, throwable)
+    override fun i(
+        tag: String,
+        message: String,
+        throwable: Throwable?,
+    ) = log(Level.INFO, tag, message, throwable)
 
-    override fun w(tag: String, message: String, throwable: Throwable?) = log(Level.WARNING, tag, message, throwable)
+    override fun w(
+        tag: String,
+        message: String,
+        throwable: Throwable?,
+    ) = log(Level.WARNING, tag, message, throwable)
 
-    override fun e(tag: String, message: String, throwable: Throwable?) = log(Level.SEVERE, tag, message, throwable)
+    override fun e(
+        tag: String,
+        message: String,
+        throwable: Throwable?,
+    ) = log(Level.SEVERE, tag, message, throwable)
 }
 
 /**
@@ -54,13 +99,33 @@ object XmtpLog {
     @Volatile
     var logger: XmtpLogger = JavaUtilXmtpLogger
 
-    fun v(tag: String, message: String, throwable: Throwable? = null) = logger.v(tag, message, throwable)
+    fun v(
+        tag: String,
+        message: String,
+        throwable: Throwable? = null,
+    ) = logger.v(tag, message, throwable)
 
-    fun d(tag: String, message: String, throwable: Throwable? = null) = logger.d(tag, message, throwable)
+    fun d(
+        tag: String,
+        message: String,
+        throwable: Throwable? = null,
+    ) = logger.d(tag, message, throwable)
 
-    fun i(tag: String, message: String, throwable: Throwable? = null) = logger.i(tag, message, throwable)
+    fun i(
+        tag: String,
+        message: String,
+        throwable: Throwable? = null,
+    ) = logger.i(tag, message, throwable)
 
-    fun w(tag: String, message: String, throwable: Throwable? = null) = logger.w(tag, message, throwable)
+    fun w(
+        tag: String,
+        message: String,
+        throwable: Throwable? = null,
+    ) = logger.w(tag, message, throwable)
 
-    fun e(tag: String, message: String, throwable: Throwable? = null) = logger.e(tag, message, throwable)
+    fun e(
+        tag: String,
+        message: String,
+        throwable: Throwable? = null,
+    ) = logger.e(tag, message, throwable)
 }

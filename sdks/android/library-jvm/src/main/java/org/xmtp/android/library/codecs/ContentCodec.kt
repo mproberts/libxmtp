@@ -2,8 +2,8 @@ package org.xmtp.android.library.codecs
 
 import com.google.protobuf.kotlin.toByteString
 import org.bouncycastle.asn1.cms.CMSAttributes.contentType
-import org.xmtp.android.library.JvmClient
 import org.xmtp.android.library.EncodedContentCompression
+import org.xmtp.android.library.JvmClient
 import org.xmtp.proto.message.contents.Content
 import uniffi.xmtpv3.FfiEncodedContent
 

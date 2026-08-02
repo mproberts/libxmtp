@@ -169,8 +169,7 @@ open class JvmClient(
                 registry
             }
 
-        private fun ApiOptions.toCacheKey(): String =
-            "${env.getUrl()}|${appVersion ?: "nil"}|${gatewayHost ?: "nil"}"
+        private fun ApiOptions.toCacheKey(): String = "${env.getUrl()}|${appVersion ?: "nil"}|${gatewayHost ?: "nil"}"
 
         private val apiClientCache = mutableMapOf<String, XmtpApiClient>()
         private val cacheLock = Mutex()

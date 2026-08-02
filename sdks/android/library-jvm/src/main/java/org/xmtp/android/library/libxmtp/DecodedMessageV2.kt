@@ -1,9 +1,8 @@
 package org.xmtp.android.library.libxmtp
 
-import org.xmtp.android.library.XmtpLog
-
 import com.google.protobuf.kotlin.toByteString
 import org.xmtp.android.library.InboxId
+import org.xmtp.android.library.XmtpLog
 import org.xmtp.android.library.codecs.Attachment
 import org.xmtp.android.library.codecs.ContentTypeId
 import org.xmtp.android.library.codecs.ContentTypeIdBuilder

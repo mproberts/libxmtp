@@ -964,7 +964,8 @@ class ClientTest : BaseInstrumentedTest() {
 
         try {
             // Activate persistent logging with a small number of log files
-            JvmClient.activatePersistentLibXMTPLogWriter(File(filesDir, "xmtp_logs").path,
+            JvmClient.activatePersistentLibXMTPLogWriter(
+                File(filesDir, "xmtp_logs").path,
                 FfiLogLevel.TRACE,
                 FfiLogRotation.HOURLY,
                 3,

@@ -31,6 +31,5 @@ data class JvmClientOptions(
     override val waitForRegistrationVisible: VisibilityConfirmationOptions? = null,
     val workingDirectory: String = System.getProperty("java.io.tmpdir") ?: ".",
 ) : ClientCreateOptions {
-    override fun resolveDbParentDirectory(): String =
-        File(workingDirectory, "xmtp_db").absolutePath
+    override fun resolveDbParentDirectory(): String = File(workingDirectory, "xmtp_db").absolutePath
 }

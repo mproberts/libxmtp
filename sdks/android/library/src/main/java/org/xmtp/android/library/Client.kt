@@ -31,8 +31,7 @@ data class ClientOptions(
 ) : ClientCreateOptions {
     override val apiOptions: ApiOptions get() = api
 
-    override fun resolveDbParentDirectory(): String =
-        File(appContext.filesDir.absolutePath, "xmtp_db").absolutePath
+    override fun resolveDbParentDirectory(): String = File(appContext.filesDir.absolutePath, "xmtp_db").absolutePath
 
     data class Api(
         override val env: XMTPEnvironment = XMTPEnvironment.DEV,
@@ -77,8 +76,7 @@ class Client internal constructor(
 
         // --- Context-based logging conveniences (resolve xmtp_logs under filesDir) ---
 
-        private fun logDir(appContext: Context): String =
-            File(appContext.filesDir, "xmtp_logs").path
+        private fun logDir(appContext: Context): String = File(appContext.filesDir, "xmtp_logs").path
 
         fun activatePersistentLibXMTPLogWriter(
             appContext: Context,
@@ -98,18 +96,18 @@ class Client internal constructor(
 
         fun setLibXMTPNativeLogLevel(logLevel: FfiLogLevel) = JvmClient.setLibXMTPNativeLogLevel(logLevel)
 
-        fun getXMTPLogFilePaths(appContext: Context): List<String> =
-            JvmClient.getXMTPLogFilePaths(logDir(appContext))
+        fun getXMTPLogFilePaths(appContext: Context): List<String> = JvmClient.getXMTPLogFilePaths(logDir(appContext))
 
         fun clearXMTPLogs(appContext: Context): Int = JvmClient.clearXMTPLogs(logDir(appContext))
 
         // --- Static API delegated to the engine (Context-free) ---
 
-        suspend fun connectToApiBackend(api: ClientOptions.Api): XmtpApiClient =
-            JvmClient.connectToApiBackend(api)
+        suspend fun connectToApiBackend(api: ClientOptions.Api): XmtpApiClient = JvmClient.connectToApiBackend(api)
 
-        suspend fun getOrCreateInboxId(api: ClientOptions.Api, publicIdentity: PublicIdentity): InboxId =
-            JvmClient.getOrCreateInboxId(api, publicIdentity)
+        suspend fun getOrCreateInboxId(
+            api: ClientOptions.Api,
+            publicIdentity: PublicIdentity,
+        ): InboxId = JvmClient.getOrCreateInboxId(api, publicIdentity)
 
         suspend fun revokeInstallations(
             api: ClientOptions.Api,
@@ -127,11 +125,15 @@ class Client internal constructor(
         ): SignatureRequest = JvmClient.ffiRevokeInstallations(api, publicIdentity, inboxId, installationIds)
 
         @DelicateApi("Prefer revokeInstallations() unless managing the signature flow independently.")
-        suspend fun ffiApplySignatureRequest(api: ClientOptions.Api, signatureRequest: SignatureRequest) =
-            JvmClient.ffiApplySignatureRequest(api, signatureRequest)
+        suspend fun ffiApplySignatureRequest(
+            api: ClientOptions.Api,
+            signatureRequest: SignatureRequest,
+        ) = JvmClient.ffiApplySignatureRequest(api, signatureRequest)
 
-        suspend fun inboxStatesForInboxIds(inboxIds: List<InboxId>, api: ClientOptions.Api): List<InboxState> =
-            JvmClient.inboxStatesForInboxIds(inboxIds, api)
+        suspend fun inboxStatesForInboxIds(
+            inboxIds: List<InboxId>,
+            api: ClientOptions.Api,
+        ): List<InboxState> = JvmClient.inboxStatesForInboxIds(inboxIds, api)
 
         suspend fun getNewestMessageMetadata(
             groupIds: List<String>,
@@ -141,22 +143,29 @@ class Client internal constructor(
         suspend fun keyPackageStatusesForInstallationIds(
             installationIds: List<String>,
             api: ClientOptions.Api,
-        ): Map<String, FfiKeyPackageStatus> =
-            JvmClient.keyPackageStatusesForInstallationIds(installationIds, api)
+        ): Map<String, FfiKeyPackageStatus> = JvmClient.keyPackageStatusesForInstallationIds(installationIds, api)
 
-        suspend fun canMessage(identities: List<PublicIdentity>, api: ClientOptions.Api): Map<String, Boolean> =
-            JvmClient.canMessage(identities, api)
+        suspend fun canMessage(
+            identities: List<PublicIdentity>,
+            api: ClientOptions.Api,
+        ): Map<String, Boolean> = JvmClient.canMessage(identities, api)
 
         // --- Client creation (produces the Android Client subtype via the engine factory) ---
 
-        suspend fun create(account: SigningKey, options: ClientOptions): Client =
+        suspend fun create(
+            account: SigningKey,
+            options: ClientOptions,
+        ): Client =
             try {
                 JvmClient.initializeV3Client(account.publicIdentity, options, account, construct = ::Client)
             } catch (e: Exception) {
                 throw XMTPException("Error creating V3 client: ${e.message}", e)
             }
 
-        suspend fun createInMemory(account: SigningKey, options: ClientOptions): Client =
+        suspend fun createInMemory(
+            account: SigningKey,
+            options: ClientOptions,
+        ): Client =
             try {
                 JvmClient.initializeV3Client(
                     account.publicIdentity,
@@ -189,7 +198,9 @@ class Client internal constructor(
         @DelicateApi(
             "This function is delicate and should be used with caution. Creating an FfiClient without signing or registering will create a broken experience use `create()` instead",
         )
-        suspend fun ffiCreateClient(publicIdentity: PublicIdentity, clientOptions: ClientOptions): Client =
-            JvmClient.ffiCreateClient(publicIdentity, clientOptions, ::Client)
+        suspend fun ffiCreateClient(
+            publicIdentity: PublicIdentity,
+            clientOptions: ClientOptions,
+        ): Client = JvmClient.ffiCreateClient(publicIdentity, clientOptions, ::Client)
     }
 }

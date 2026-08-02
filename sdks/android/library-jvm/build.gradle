@@ -100,12 +100,64 @@ afterEvaluate {
                     }
                 }
             }
+            // Optional desktop-JVM native artifact. Standalone (non-Android) JVM
+            // consumers need the libxmtp native lib on their classpath; the main
+            // xmtp-jvm jar deliberately omits it. Point -PxmtpJvmNativeDir at a
+            // `nix build .#jvm-libs` result (single-OS locally, or a CI-assembled union
+            // of the per-runner macOS+Linux slices); its
+            // resources/<os-arch>/libuniffi_xmtpv3.* are packaged at the jar root, where
+            // JNA (Platform.RESOURCE_PREFIX) resolves them. Android (jniLibs) and the
+            // KMP androidMain do not use this.
+            if (findProperty("xmtpJvmNativeDir")) {
+                nativeRelease(MavenPublication) {
+                    groupId = "org.xmtp"
+                    artifactId = "xmtp-jvm-native"
+                    version = rootProject.version
+
+                    artifact(tasks.register("nativeJar", Jar) {
+                        archiveClassifier = "natives"
+                        from("${findProperty('xmtpJvmNativeDir')}/resources")
+                    })
+
+                    pom {
+                        name = "XMTP JVM native libraries"
+                        description = "libxmtp native libraries (JNA layout) for standalone desktop-JVM consumers of org.xmtp:xmtp-jvm"
+                        url = "https://github.com/xmtp/xmtp-android"
+
+                        licenses {
+                            license {
+                                name = "MIT License"
+                                url = "https://github.com/xmtp/xmtp-android/blob/main/LICENSE"
+                            }
+                        }
+                        developers {
+                            developer {
+                                id = "xmtp"
+                                name = "xmtp"
+                                email = "naomi@xmtp.com"
+                            }
+                        }
+                        scm {
+                            connection = "https://github.com/xmtp/xmtp-android.git"
+                            developerConnection = "https://github.com/xmtp/xmtp-android.git"
+                            url = "https://github.com/xmtp/xmtp-android/tree/main"
+                        }
+                    }
+                }
+            }
         }
     }
     signing {
         def signingKey = System.getenv("SIGN_KEY")
         def signingPassword = System.getenv("SIGN_PASSWORD")
-        useInMemoryPgpKeys(signingKey, signingPassword)
-        sign publishing.publications.release
+        // Only sign when a key is provided (CI release). Keyless local
+        // publishToMavenLocal (dry-runs) must not require .asc artifacts.
+        if (signingKey) {
+            useInMemoryPgpKeys(signingKey, signingPassword)
+            sign publishing.publications.release
+            if (findProperty("xmtpJvmNativeDir")) {
+                sign publishing.publications.nativeRelease
+            }
+        }
     }
 }

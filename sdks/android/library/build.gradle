@@ -85,8 +85,15 @@ protobuf {
 dependencies {
     // The pure-JVM engine (JvmClient + conversations + codecs + FFI bindings).
     // Exclude the engine's desktop JNA jar; Android uses the @aar variant below.
+    // Android substitutes the platform-native variants of two engine deps:
+    //  - JNA: the @aar variant (below) instead of the engine's desktop jar.
+    //  - Tink: `tink-android` (below) instead of the engine's JVM `tink`. JVM `tink`
+    //    pulls full `protobuf-java`, which collides at dex time with the
+    //    `protobuf-javalite` used by XMTP's proto-kotlin-lite; `tink-android` uses
+    //    javalite. (Only Hkdf is used from Tink — stable across these versions.)
     api(project(':library-jvm')) {
         exclude group: 'net.java.dev.jna'
+        exclude group: 'com.google.crypto.tink', module: 'tink'
     }
     implementation 'com.google.crypto.tink:tink-android:1.8.0'
     implementation 'io.grpc:grpc-kotlin-stub:1.4.1'
@@ -151,7 +158,11 @@ afterEvaluate {
     signing {
         def signingKey = System.getenv("SIGN_KEY")
         def signingPassword = System.getenv("SIGN_PASSWORD")
-        useInMemoryPgpKeys(signingKey, signingPassword)
-        sign publishing.publications.release
+        // Only sign when a key is provided (CI release). Keyless local
+        // publishToMavenLocal (dry-runs) must not require .asc artifacts.
+        if (signingKey) {
+            useInMemoryPgpKeys(signingKey, signingPassword)
+            sign publishing.publications.release
+        }
     }
 }

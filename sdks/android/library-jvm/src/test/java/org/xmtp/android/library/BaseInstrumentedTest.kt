@@ -25,8 +25,7 @@ abstract class BaseInstrumentedTest {
     protected val dbEncryptionKey: ByteArray = SecureRandom().generateSeed(32)
 
     /** LOCAL environment pointed at localhost (the docker backend is published on the host). */
-    protected fun localApi(): JvmApi =
-        JvmApi(env = XMTPEnvironment.LOCAL.withValue("localhost"))
+    protected fun localApi(): JvmApi = JvmApi(env = XMTPEnvironment.LOCAL.withValue("localhost"))
 
     @Before
     open fun setUp() {
@@ -66,9 +65,7 @@ abstract class BaseInstrumentedTest {
         return client
     }
 
-    protected suspend fun createFixtures(
-        api: ApiOptions = localApi(),
-    ): TestFixtures {
+    protected suspend fun createFixtures(api: ApiOptions = localApi()): TestFixtures {
         val alixAccount = PrivateKeyBuilder()
         val boAccount = PrivateKeyBuilder()
         val caroAccount = PrivateKeyBuilder()
